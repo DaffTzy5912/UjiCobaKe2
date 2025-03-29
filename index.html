@@ -7,7 +7,7 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
         button { padding: 10px; margin: 5px; font-size: 18px; }
-        #room-section, #game-section { display: none; }
+        #room-section { display: none; }
     </style>
 </head>
 <body>
@@ -31,33 +31,34 @@
 
     <script>
         let roomId = "";
-        let playerId = Math.random().toString(36).substring(7); // Player ID unik
+        let playerId = Math.random().toString(36).substring(7); // ID unik untuk pemain
+        const API_URL = "https://uji-coba-ke2.vercel.app/api"; // Ganti ke Vercel
 
         async function createRoom() {
-            let res = await fetch('/api/create-room');
+            let res = await fetch(`${API_URL}/create-room`);
             let data = await res.json();
             roomId = data.roomId;
             updateUI();
         }
 
         async function joinRoom() {
-            roomId = document.getElementById('room-code').value;
+            roomId = document.getElementById("room-code").value;
             if (!roomId) return alert("Masukkan kode room!");
             updateUI();
         }
 
         function updateUI() {
-            document.getElementById('room-id').innerText = "Room: " + roomId;
-            document.getElementById('player-id').innerText = "Player ID: " + playerId;
-            document.getElementById('create-room').style.display = "none";
-            document.getElementById('room-section').style.display = "block";
+            document.getElementById("room-id").innerText = "Room: " + roomId;
+            document.getElementById("player-id").innerText = "Player ID: " + playerId;
+            document.getElementById("create-room").style.display = "none";
+            document.getElementById("room-section").style.display = "block";
         }
 
         async function play(choice) {
-            let res = await fetch(`/api/play?roomId=${roomId}&player=${playerId}&choice=${choice}`);
+            let res = await fetch(`${API_URL}/play?roomId=${roomId}&player=${playerId}&choice=${choice}`);
             let data = await res.json();
-            document.getElementById('status').innerText = data.status || "";
-            document.getElementById('result').innerText = data.result || "";
+            document.getElementById("status").innerText = data.status || "";
+            document.getElementById("result").innerText = data.result || "";
 
             if (data.status === "Menunggu pemain lain...") {
                 checkResult();
@@ -66,11 +67,11 @@
 
         async function checkResult() {
             let interval = setInterval(async () => {
-                let res = await fetch(`/api/check-result?roomId=${roomId}`);
+                let res = await fetch(`${API_URL}/check-result?roomId=${roomId}`);
                 let data = await res.json();
                 if (data.result) {
-                    document.getElementById('status').innerText = "";
-                    document.getElementById('result').innerText = data.result;
+                    document.getElementById("status").innerText = "";
+                    document.getElementById("result").innerText = data.result;
                     clearInterval(interval);
                 }
             }, 2000);
