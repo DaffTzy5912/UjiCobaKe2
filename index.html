@@ -15,66 +15,61 @@
     <h2>Game Suit Online ✌️✊✋</h2>
 
     <div id="create-room">
-    <input type="text" id="player-name" placeholder="Masukkan nama kamu">
-    <button onclick="createRoom()">Buat Room</button>
-    <input type="text" id="room-code" placeholder="Masukkan kode room">
-    <button onclick="joinRoom()">Masuk Room</button>
-    <p id="error-message" class="error"></p>
-</div>
+        <button onclick="createRoom()">Buat Room</button>
+        <input type="text" id="room-code" placeholder="Masukkan kode room">
+        <button onclick="joinRoom()">Masuk Room</button>
+        <p id="error-message" class="error"></p>
+    </div>
 
-<div id="room-section" style="display: none;">
-    <h3 id="room-id"></h3>
-    <p id="player-id"></p>
-    <button onclick="play('rock')">✊</button>
-    <button onclick="play('paper')">✋</button>
-    <button onclick="play('scissors')">✌️</button>
-    <p id="status">Menunggu pemain lain...</p>
-    <p id="result"></p>
-</div>
+    <div id="room-section">
+        <h3 id="room-id"></h3>
+        <p id="player-id"></p>
+        <button onclick="play('rock')">✊</button>
+        <button onclick="play('paper')">✋</button>
+        <button onclick="play('scissors')">✌️</button>
+        <p id="status">Menunggu pemain lain...</p>
+        <p id="result"></p>
+    </div>
 
     <script>
-    let roomId = "";
-    let playerName = "";
-    const API_URL = "https://uji-coba-ke2.vercel.app/api";
+        let roomId = "";
+let playerId = Math.random().toString(36).substring(7); // ID unik untuk pemain
+const API_URL = "https://uji-coba-ke2.vercel.app/api"; // Ganti ke Vercel
 
-    async function createRoom() {
-        playerName = document.getElementById("player-name").value.trim();
-        if (!playerName) return alert("Masukkan nama dulu!");
-        
-        let res = await fetch(`${API_URL}/create-room`);
-        let data = await res.json();
-        roomId = data.roomId;
-        updateUI();
-    }
+async function createRoom() {
+    let res = await fetch(`${API_URL}/create-room`);
+    let data = await res.json();
+    roomId = data.roomId;
+    updateUI();
+}
 
-    async function joinRoom() {
-        playerName = document.getElementById("player-name").value.trim();
-        roomId = document.getElementById("room-code").value.trim();
-        if (!playerName || !roomId) return alert("Masukkan nama dan kode room!");
+async function joinRoom() {
+    roomId = document.getElementById("room-code").value;
+    if (!roomId) return alert("Masukkan kode room!");
+    updateUI();
+}
 
-        updateUI();
-    }
+function updateUI() {
+    document.getElementById("room-id").innerText = "Room: " + roomId;
+    document.getElementById("player-id").innerText = "Player ID: " + playerId;
+    document.getElementById("create-room").style.display = "none";
+    document.getElementById("room-section").style.display = "block";
+}
 
-    function updateUI() {
-        document.getElementById("room-id").innerText = "Room: " + roomId;
-        document.getElementById("player-id").innerText = "Nama: " + playerName;
-        document.getElementById("create-room").style.display = "none";
-        document.getElementById("room-section").style.display = "block";
-    }
-
-    async function play(choice) {
+async function play(choice) {
     let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}&choice=${choice}`);
     let data = await res.json();
 
     if (data.status === "Menunggu pemain lain...") {
-        document.getElementById("status").innerText = "Menunggu lawan memilih...";
-        checkResult(); // Mulai polling hasil pertandingan
+        document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
+        checkResult(); // Mulai mengecek hasil
     } else {
         document.getElementById("result").innerText = data.result;
         document.getElementById("status").innerText = "";
     }
 }
 
+// Memastikan kedua pemain langsung mendapat hasil
 async function checkResult() {
     let interval = setInterval(async () => {
         let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}`);
@@ -84,9 +79,11 @@ async function checkResult() {
             document.getElementById("status").innerText = "";
             document.getElementById("result").innerText = data.result;
             clearInterval(interval);
+        } else if (data.status === "Menunggu giliranmu...") {
+            document.getElementById("status").innerText = "Sekarang giliranmu untuk memilih!";
         }
-    }, 1000); // Mengecek setiap 1 detik
+    }, 1000); // Interval lebih cepat agar sinkronisasi lebih lancar
 }
-</script>
+    </script>
 </body>
 </html>
