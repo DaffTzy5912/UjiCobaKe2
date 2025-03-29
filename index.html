@@ -21,36 +21,59 @@
 
     <div id="room-section">
         <h3 id="room-id"></h3>
+        <p id="player-id"></p>
         <button onclick="play('rock')">✊</button>
         <button onclick="play('paper')">✋</button>
         <button onclick="play('scissors')">✌️</button>
+        <p id="status">Menunggu pemain lain...</p>
         <p id="result"></p>
     </div>
 
     <script>
         let roomId = "";
+        let playerId = Math.random().toString(36).substring(7); // Player ID unik
 
         async function createRoom() {
             let res = await fetch('/api/create-room');
             let data = await res.json();
             roomId = data.roomId;
-            document.getElementById('room-id').innerText = "Room: " + roomId;
-            document.getElementById('create-room').style.display = "none";
-            document.getElementById('room-section').style.display = "block";
+            updateUI();
         }
 
         async function joinRoom() {
             roomId = document.getElementById('room-code').value;
             if (!roomId) return alert("Masukkan kode room!");
+            updateUI();
+        }
+
+        function updateUI() {
             document.getElementById('room-id').innerText = "Room: " + roomId;
+            document.getElementById('player-id').innerText = "Player ID: " + playerId;
             document.getElementById('create-room').style.display = "none";
             document.getElementById('room-section').style.display = "block";
         }
 
         async function play(choice) {
-            let res = await fetch(`/api/play?roomId=${roomId}&choice=${choice}`);
+            let res = await fetch(`/api/play?roomId=${roomId}&player=${playerId}&choice=${choice}`);
             let data = await res.json();
-            document.getElementById('result').innerText = data.result;
+            document.getElementById('status').innerText = data.status || "";
+            document.getElementById('result').innerText = data.result || "";
+
+            if (data.status === "Menunggu pemain lain...") {
+                checkResult();
+            }
+        }
+
+        async function checkResult() {
+            let interval = setInterval(async () => {
+                let res = await fetch(`/api/check-result?roomId=${roomId}`);
+                let data = await res.json();
+                if (data.result) {
+                    document.getElementById('status').innerText = "";
+                    document.getElementById('result').innerText = data.result;
+                    clearInterval(interval);
+                }
+            }, 2000);
         }
     </script>
 </body>
