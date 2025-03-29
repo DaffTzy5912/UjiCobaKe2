@@ -221,6 +221,7 @@ button:active {
         let roomId = "";
 let playerName = ""; // Nama pemain
 const API_URL = "https://uji-coba-ke2.vercel.app/api"; // Ganti ke Vercel
+let isCreator = false; // Apakah pemain saat ini adalah pembuat room?
 
 async function createRoom() {
     playerName = document.getElementById("player-name").value.trim();
@@ -229,6 +230,7 @@ async function createRoom() {
     let res = await fetch(`${API_URL}/create-room`);
     let data = await res.json();
     roomId = data.roomId;
+    isCreator = true; // Set sebagai pembuat room
     updateUI();
 }
 
@@ -240,8 +242,8 @@ async function joinRoom() {
     if (!roomId) return alert("Masukkan kode room!");
     updateUI();
 
-    // Notifikasi ke pembuat room bahwa pemain baru bergabung
-    notifyCreator(playerName);
+    // Polling untuk memeriksa status room
+    checkRoomStatus();
 }
 
 function updateUI() {
@@ -264,6 +266,21 @@ async function play(choice) {
     }
 }
 
+async function checkRoomStatus() {
+    let interval = setInterval(async () => {
+        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerName}`);
+        let data = await res.json();
+
+        // Tampilkan notifikasi jika pemain lain sudah bergabung
+        if (data.players && data.players.length === 2) {
+            clearInterval(interval); // Hentikan polling
+            if (isCreator) {
+                document.getElementById("opponent-notification").innerText = `${data.players.find(p => p !== playerName)} sudah memasuki room anda!`;
+            }
+        }
+    }, 1000); // Mengecek setiap 1 detik
+}
+
 async function checkResult() {
     let interval = setInterval(async () => {
         let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerName}`);
@@ -275,18 +292,14 @@ async function checkResult() {
             clearInterval(interval);
         } else {
             // Jika pemain lain sudah memilih, tampilkan notifikasi giliran
-            const choices = Object.values(data.choices || {});
-            if (choices.length === 1) {
+            const choices = data.choices || {};
+            if (Object.keys(choices).length === 1 && !choices[playerName]) {
                 document.getElementById("turn-notification").innerText = "Sekarang giliran anda!";
+            } else {
+                document.getElementById("turn-notification").innerText = "";
             }
         }
     }, 1000); // Mengecek setiap 1 detik
-}
-
-// Fungsi untuk memberi tahu pembuat room bahwa pemain baru masuk
-function notifyCreator(opponentName) {
-    const creatorNotification = document.getElementById("opponent-notification");
-    creatorNotification.innerText = `${opponentName} sudah memasuki room anda!`;
 }
     </script>
 </body>
