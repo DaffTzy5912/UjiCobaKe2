@@ -9,47 +9,25 @@ export default function handler(req, res) {
 
     // Buat room jika belum ada
     if (!rooms[roomId]) {
-        rooms[roomId] = { creator: playerId, players: [], choices: {}, result: "" };
+        rooms[roomId] = { players: {}, choices: {}, result: "" };
     }
 
-    // Tambahkan pemain ke room jika belum ada
-    if (!rooms[roomId].players.includes(playerId)) {
-        rooms[roomId].players.push(playerId);
-    }
-
-    // Simpan pilihan pemain jika ada
+    // Simpan pilihan pemain
     if (choice) {
         rooms[roomId].choices[playerId] = choice;
     }
 
-    const players = rooms[roomId].players;
-    const choices = rooms[roomId].choices;
+    const choices = Object.values(rooms[roomId].choices);
 
-    // Jika belum ada dua pemain, kembalikan status menunggu
-    if (players.length < 2) {
-        return res.json({
-            status: "Menunggu pemain lain...",
-            isCreator: playerId === rooms[roomId].creator,
-            players: players,
-            choices: choices || {},
-        });
-    }
-
-    // Jika sudah ada dua pemain tetapi belum semua memilih
-    if (Object.keys(choices).length < 2) {
-        return res.json({
-            status: "Menunggu lawan memilih...",
-            isCreator: playerId === rooms[roomId].creator,
-            players: players,
-            choices: choices || {},
-        });
+    if (choices.length < 2) {
+        return res.json({ status: "Menunggu pemain lain..." });
     }
 
     // Jika sudah ada dua pilihan, tentukan hasilnya
     if (!rooms[roomId].result) {
-        const [player1, player2] = Object.keys(choices);
-        const choice1 = choices[player1];
-        const choice2 = choices[player2];
+        const [player1, player2] = Object.keys(rooms[roomId].choices);
+        const choice1 = rooms[roomId].choices[player1];
+        const choice2 = rooms[roomId].choices[player2];
 
         let result = "";
 
@@ -69,12 +47,7 @@ export default function handler(req, res) {
     }
 
     // Kirim hasil pertandingan ke kedua pemain
-    res.json({
-        result: rooms[roomId].result || "",
-        isCreator: playerId === rooms[roomId].creator,
-        players: players || [],
-        choices: choices || {},
-    });
+    res.json({ result: rooms[roomId].result });
 
     // Reset room setelah 5 detik untuk game baru
     setTimeout(() => {
