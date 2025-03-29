@@ -15,21 +15,22 @@
     <h2>Game Suit Online ✌️✊✋</h2>
 
     <div id="create-room">
-        <button onclick="createRoom()">Buat Room</button>
-        <input type="text" id="room-code" placeholder="Masukkan kode room">
-        <button onclick="joinRoom()">Masuk Room</button>
-        <p id="error-message" class="error"></p>
-    </div>
+    <input type="text" id="player-name" placeholder="Masukkan nama kamu">
+    <button onclick="createRoom()">Buat Room</button>
+    <input type="text" id="room-code" placeholder="Masukkan kode room">
+    <button onclick="joinRoom()">Masuk Room</button>
+    <p id="error-message" class="error"></p>
+</div>
 
-    <div id="room-section">
-        <h3 id="room-id"></h3>
-        <p id="player-id"></p>
-        <button onclick="play('rock')">✊</button>
-        <button onclick="play('paper')">✋</button>
-        <button onclick="play('scissors')">✌️</button>
-        <p id="status">Menunggu pemain lain...</p>
-        <p id="result"></p>
-    </div>
+<div id="room-section" style="display: none;">
+    <h3 id="room-id"></h3>
+    <p id="player-id"></p>
+    <button onclick="play('rock')">✊</button>
+    <button onclick="play('paper')">✋</button>
+    <button onclick="play('scissors')">✌️</button>
+    <p id="status">Menunggu pemain lain...</p>
+    <p id="result"></p>
+</div>
 
     <script>
         let roomId = "";
