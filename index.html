@@ -8,6 +8,7 @@
         body { font-family: Arial, sans-serif; text-align: center; }
         button { padding: 10px; margin: 5px; font-size: 18px; }
         #room-section { display: none; }
+        .error { color: red; }
     </style>
 </head>
 <body>
@@ -17,6 +18,7 @@
         <button onclick="createRoom()">Buat Room</button>
         <input type="text" id="room-code" placeholder="Masukkan kode room">
         <button onclick="joinRoom()">Masuk Room</button>
+        <p id="error-message" class="error"></p>
     </div>
 
     <div id="room-section">
@@ -31,57 +33,74 @@
 
     <script>
         let roomId = "";
-let playerId = Math.random().toString(36).substring(7); // ID unik untuk pemain
-const API_URL = "https://uji-coba-ke2.vercel.app/api"; // Ganti ke Vercel
+        let playerId = Math.random().toString(36).substring(7); // ID unik untuk pemain
+        const API_URL = "https://uji-coba-ke2.vercel.app/api"; // Ganti ke Vercel
+        let pollInterval;
 
-async function createRoom() {
-    let res = await fetch(`${API_URL}/create-room`);
-    let data = await res.json();
-    roomId = data.roomId;
-    updateUI();
-}
-
-async function joinRoom() {
-    roomId = document.getElementById("room-code").value;
-    if (!roomId) return alert("Masukkan kode room!");
-    updateUI();
-}
-
-function updateUI() {
-    document.getElementById("room-id").innerText = "Room: " + roomId;
-    document.getElementById("player-id").innerText = "Player ID: " + playerId;
-    document.getElementById("create-room").style.display = "none";
-    document.getElementById("room-section").style.display = "block";
-}
-
-async function play(choice) {
-    let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}&choice=${choice}`);
-    let data = await res.json();
-
-    if (data.status === "Menunggu pemain lain...") {
-        document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
-        checkResult(); // Mulai mengecek hasil
-    } else {
-        document.getElementById("result").innerText = data.result;
-        document.getElementById("status").innerText = "";
-    }
-}
-
-// Memastikan kedua pemain langsung mendapat hasil
-async function checkResult() {
-    let interval = setInterval(async () => {
-        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}`);
-        let data = await res.json();
-
-        if (data.result) {
-            document.getElementById("status").innerText = "";
-            document.getElementById("result").innerText = data.result;
-            clearInterval(interval);
-        } else if (data.status === "Menunggu giliranmu...") {
-            document.getElementById("status").innerText = "Sekarang giliranmu untuk memilih!";
+        async function createRoom() {
+            try {
+                let res = await fetch(`${API_URL}/create-room`);
+                if (!res.ok) throw new Error("Gagal membuat room.");
+                let data = await res.json();
+                roomId = data.roomId;
+                updateUI();
+            } catch (error) {
+                document.getElementById("error-message").innerText = error.message;
+            }
         }
-    }, 1000); // Interval lebih cepat agar sinkronisasi lebih lancar
-}
+
+        async function joinRoom() {
+            roomId = document.getElementById("room-code").value;
+            if (!roomId) return alert("Masukkan kode room!");
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById("room-id").innerText = "Room: " + roomId;
+            document.getElementById("player-id").innerText = "Player ID: " + playerId;
+            document.getElementById("create-room").style.display = "none";
+            document.getElementById("room-section").style.display = "block";
+        }
+
+        async function play(choice) {
+            try {
+                let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}&choice=${choice}`);
+                if (!res.ok) throw new Error("Gagal mengirim pilihan.");
+                let data = await res.json();
+
+                if (data.status === "Menunggu pemain lain...") {
+                    document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
+                    startPolling(); // Mulai polling hasil
+                } else {
+                    document.getElementById("result").innerText = data.result;
+                    document.getElementById("status").innerText = "";
+                }
+            } catch (error) {
+                document.getElementById("error-message").innerText = error.message;
+            }
+        }
+
+        // Polling untuk memeriksa hasil dari server
+        function startPolling() {
+            pollInterval = setInterval(async () => {
+                try {
+                    let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}`);
+                    if (!res.ok) throw new Error("Gagal memeriksa hasil.");
+                    let data = await res.json();
+
+                    if (data.result) {
+                        clearInterval(pollInterval); // Hentikan polling setelah hasil diterima
+                        document.getElementById("status").innerText = "";
+                        document.getElementById("result").innerText = data.result;
+                    } else if (data.status === "Menunggu giliranmu...") {
+                        document.getElementById("status").innerText = "Sekarang giliranmu untuk memilih!";
+                    }
+                } catch (error) {
+                    document.getElementById("error-message").innerText = error.message;
+                    clearInterval(pollInterval); // Hentikan polling jika terjadi kesalahan
+                }
+            }, 2000); // Interval polling 2 detik
+        }
     </script>
 </body>
 </html>
