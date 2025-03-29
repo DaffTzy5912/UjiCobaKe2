@@ -54,16 +54,14 @@
             document.getElementById("room-section").style.display = "block";
         }
 
-        async function play(choice) {
-            let res = await fetch(`${API_URL}/play?roomId=${roomId}&player=${playerId}&choice=${choice}`);
-            let data = await res.json();
-            document.getElementById("status").innerText = data.status || "";
-            document.getElementById("result").innerText = data.result || "";
+        let playerId = Math.random().toString(36).substring(7);
 
-            if (data.status === "Menunggu pemain lain...") {
-                checkResult();
-            }
-        }
+async function play(choice) {
+    let res = await fetch(`/api/check-result?roomId=${roomId}&playerId=${playerId}&choice=${choice}`);
+    let data = await res.json();
+
+    document.getElementById('result').innerText = data.result || data.status;
+}
 
         async function checkResult() {
             let interval = setInterval(async () => {
