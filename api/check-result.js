@@ -1,70 +1,55 @@
-const rooms = {}; // Menyimpan room dan pemainnya
+const rooms = {}; // Menyimpan status permainan
 
 export default function handler(req, res) {
-    const { roomId, playerName, choice } = req.query;
+    const { roomId, playerId, choice } = req.query;
 
-    if (!roomId || !playerName || !choice) {
+    if (!roomId || !playerId) {
         return res.json({ error: "Permintaan tidak valid" });
     }
 
+    // Buat room jika belum ada
     if (!rooms[roomId]) {
-        rooms[roomId] = { players: {}, choices: {} };
+        rooms[roomId] = { players: {}, choices: {}, result: "" };
     }
 
-    // Simpan nama pemain dan pilihan mereka
-    rooms[roomId].players[playerName] = true;
-    rooms[roomId].choices[playerName] = choice;
+    // Simpan pilihan pemain
+    if (choice) {
+        rooms[roomId].choices[playerId] = choice;
+    }
 
-    const playerNames = Object.keys(rooms[roomId].choices);
+    const choices = Object.values(rooms[roomId].choices);
 
-    if (playerNames.length < 2) {
+    if (choices.length < 2) {
         return res.json({ status: "Menunggu pemain lain..." });
     }
 
-    // Pastikan dua pemain ada
-    if (playerNames.length !== 2) {
-        return res.json({ error: "Terjadi kesalahan dalam pencocokan pemain" });
+    // Jika sudah ada dua pilihan, tentukan hasilnya
+    if (!rooms[roomId].result) {
+        const [player1, player2] = Object.keys(rooms[roomId].choices);
+        const choice1 = rooms[roomId].choices[player1];
+        const choice2 = rooms[roomId].choices[player2];
+
+        let result = "";
+
+        if (choice1 === choice2) {
+            result = "Seri!";
+        } else if (
+            (choice1 === "rock" && choice2 === "scissors") ||
+            (choice1 === "scissors" && choice2 === "paper") ||
+            (choice1 === "paper" && choice2 === "rock")
+        ) {
+            result = `${player1} menang! ${player2} kalah.`;
+        } else {
+            result = `${player2} menang! ${player1} kalah.`;
+        }
+
+        rooms[roomId].result = result;
     }
 
-    const [p1, p2] = playerNames;
-    const choice1 = rooms[roomId].choices[p1];
-    const choice2 = rooms[roomId].choices[p2];
+    // Kirim hasil pertandingan ke kedua pemain
+    res.json({ result: rooms[roomId].result });
 
-    if (!choice1 || !choice2) {
-        return res.json({ error: "Pilihan pemain tidak ditemukan" });
-    }
-
-    let result1 = "";
-    let result2 = "";
-
-    if (choice1 === choice2) {
-        result1 = `Seri! (${p1} vs ${p2})`;
-        result2 = `Seri! (${p2} vs ${p1})`;
-    } else if (
-        (choice1 === "rock" && choice2 === "scissors") ||
-        (choice1 === "scissors" && choice2 === "paper") ||
-        (choice1 === "paper" && choice2 === "rock")
-    ) {
-        result1 = `Kamu menang! (${p1} vs ${p2})`;
-        result2 = `Kamu kalah! (${p2} vs ${p1})`;
-    } else {
-        result1 = `Kamu kalah! (${p1} vs ${p2})`;
-        result2 = `Kamu menang! (${p2} vs ${p1})`;
-    }
-
-    // Simpan hasil di room sebelum menghapusnya
-    rooms[roomId].results = {
-        [p1]: result1,
-        [p2]: result2
-    };
-
-    res.json({
-        player1: p1,
-        player2: p2,
-        results: rooms[roomId].results
-    });
-
-    // Hapus data room setelah selesai
+    // Reset room setelah 5 detik untuk game baru
     setTimeout(() => {
         delete rooms[roomId];
     }, 5000);
