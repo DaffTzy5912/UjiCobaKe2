@@ -1,4 +1,4 @@
-const rooms = {}; // Menyimpan room dan pilihan pemain
+const rooms = {};
 
 export default function handler(req, res) {
     const { roomId, player, choice } = req.query;
@@ -48,11 +48,8 @@ export default function handler(req, res) {
         result = `${player2} menang!`;
     }
 
-    // Simpan hasil sementara (agar kedua pemain bisa melihat hasil)
-    const matchResult = { result, player1: choice1, player2: choice2 };
+    // Simpan hasil agar bisa dicek
+    rooms[roomId].result = result;
 
-    // Hapus room setelah beberapa detik agar tidak penuh
-    setTimeout(() => delete rooms[roomId], 5000);
-
-    res.json(matchResult);
+    res.json({ result });
 }
