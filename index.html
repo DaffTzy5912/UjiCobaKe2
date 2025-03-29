@@ -271,11 +271,14 @@ async function checkRoomStatus() {
         let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerName}`);
         let data = await res.json();
 
-        // Tampilkan notifikasi jika pemain lain sudah bergabung
+        // Jika pemain lain sudah bergabung
         if (data.players && data.players.length === 2) {
             clearInterval(interval); // Hentikan polling
+
+            // Notifikasi hanya untuk pembuat room
             if (isCreator) {
-                document.getElementById("opponent-notification").innerText = `${data.players.find(p => p !== playerName)} sudah memasuki room anda!`;
+                const opponentName = data.players.find(p => p !== playerName);
+                document.getElementById("opponent-notification").innerText = `${opponentName} sudah memasuki room anda!`;
             }
         }
     }, 1000); // Mengecek setiap 1 detik
