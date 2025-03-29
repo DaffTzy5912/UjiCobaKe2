@@ -33,61 +33,62 @@
 </div>
 
     <script>
-        let roomId = "";
-let playerName = "";
-const API_URL = "https://uji-coba-ke2.vercel.app/api"; // Sesuaikan dengan server
+    let roomId = "";
+    let playerName = "";
+    const API_URL = "https://uji-coba-ke2.vercel.app/api";
 
-async function createRoom() {
-    playerName = document.getElementById("player-name").value.trim();
-    if (!playerName) return alert("Masukkan nama terlebih dahulu!");
-
-    let res = await fetch(`${API_URL}/create-room`);
-    let data = await res.json();
-    roomId = data.roomId;
-    updateUI();
-}
-
-async function joinRoom() {
-    playerName = document.getElementById("player-name").value.trim();
-    roomId = document.getElementById("room-code").value;
-    if (!roomId || !playerName) return alert("Masukkan nama dan kode room!");
-
-    await fetch(`${API_URL}/join-room?roomId=${roomId}&playerName=${playerName}`);
-    updateUI();
-}
-
-function updateUI() {
-    document.getElementById("room-id").innerText = "Room: " + roomId;
-    document.getElementById("player-id").innerText = "Pemain: " + playerName;
-    document.getElementById("create-room").style.display = "none";
-    document.getElementById("room-section").style.display = "block";
-}
-
-async function play(choice) {
-    let res = await fetch(`${API_URL}/play?roomId=${roomId}&playerName=${playerName}&choice=${choice}`);
-    let data = await res.json();
-
-    if (data.status === "Menunggu pemain lain...") {
-        document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
-        checkResult();
-    } else {
-        document.getElementById("result").innerText = data.result;
-        document.getElementById("status").innerText = "";
+    async function createRoom() {
+        playerName = document.getElementById("player-name").value.trim();
+        if (!playerName) return alert("Masukkan nama dulu!");
+        
+        let res = await fetch(`${API_URL}/create-room`);
+        let data = await res.json();
+        roomId = data.roomId;
+        updateUI();
     }
-}
 
-async function checkResult() {
-    let interval = setInterval(async () => {
-        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}`);
+    async function joinRoom() {
+        playerName = document.getElementById("player-name").value.trim();
+        roomId = document.getElementById("room-code").value.trim();
+        if (!playerName || !roomId) return alert("Masukkan nama dan kode room!");
+
+        updateUI();
+    }
+
+    function updateUI() {
+        document.getElementById("room-id").innerText = "Room: " + roomId;
+        document.getElementById("player-id").innerText = "Nama: " + playerName;
+        document.getElementById("create-room").style.display = "none";
+        document.getElementById("room-section").style.display = "block";
+    }
+
+    async function play(choice) {
+        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerName=${encodeURIComponent(playerName)}&choice=${choice}`);
         let data = await res.json();
 
-        if (data.result) {
-            document.getElementById("status").innerText = "";
+        if (data.status === "Menunggu pemain lain...") {
+            document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
+            checkResult();
+        } else {
             document.getElementById("result").innerText = data.result;
-            clearInterval(interval);
+            document.getElementById("status").innerText = "";
         }
-    }, 1000);
-}
-    </script>
+    }
+
+    async function checkResult() {
+        let interval = setInterval(async () => {
+            let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerName=${encodeURIComponent(playerName)}`);
+            let data = await res.json();
+
+            if (data.result) {
+                document.getElementById("status").innerText = "";
+                document.getElementById("result").innerText = data.result;
+                clearInterval(interval);
+            } else if (data.status === "Menunggu giliranmu...") {
+                document.getElementById("status").innerText = "Sekarang giliranmu untuk memilih!";
+            }
+        }, 1000);
+    }
+</script>
 </body>
 </html>
