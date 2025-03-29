@@ -61,15 +61,14 @@ async function play(choice) {
     let data = await res.json();
 
     if (data.status === "Menunggu pemain lain...") {
-        document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
-        checkResult(); // Mulai mengecek hasil
+        document.getElementById("status").innerText = "Menunggu lawan memilih...";
+        checkResult(); // Mulai polling hasil pertandingan
     } else {
         document.getElementById("result").innerText = data.result;
         document.getElementById("status").innerText = "";
     }
 }
 
-// Memastikan kedua pemain langsung mendapat hasil
 async function checkResult() {
     let interval = setInterval(async () => {
         let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}`);
@@ -79,10 +78,8 @@ async function checkResult() {
             document.getElementById("status").innerText = "";
             document.getElementById("result").innerText = data.result;
             clearInterval(interval);
-        } else if (data.status === "Menunggu giliranmu...") {
-            document.getElementById("status").innerText = "Sekarang giliranmu untuk memilih!";
         }
-    }, 1000); // Interval lebih cepat agar sinkronisasi lebih lancar
+    }, 1000); // Mengecek setiap 1 detik
 }
     </script>
 </body>
