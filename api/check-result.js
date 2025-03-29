@@ -1,4 +1,4 @@
-const rooms = {}; // Simpan room dan pemainnya
+const rooms = {}; // Menyimpan room dan pemainnya
 
 export default function handler(req, res) {
     const { roomId, playerName, choice } = req.query;
@@ -11,7 +11,7 @@ export default function handler(req, res) {
         rooms[roomId] = { players: {}, choices: {} };
     }
 
-    // Simpan nama pemain dan pilihan suit mereka
+    // Simpan nama pemain dan pilihan mereka
     rooms[roomId].players[playerName] = true;
     rooms[roomId].choices[playerName] = choice;
 
@@ -21,16 +21,25 @@ export default function handler(req, res) {
         return res.json({ status: "Menunggu pemain lain..." });
     }
 
-    // Jika kedua pemain sudah memilih, tentukan hasilnya
+    // Pastikan dua pemain ada
+    if (playerNames.length !== 2) {
+        return res.json({ error: "Terjadi kesalahan dalam pencocokan pemain" });
+    }
+
     const [p1, p2] = playerNames;
     const choice1 = rooms[roomId].choices[p1];
     const choice2 = rooms[roomId].choices[p2];
+
+    if (!choice1 || !choice2) {
+        return res.json({ error: "Pilihan pemain tidak ditemukan" });
+    }
 
     let result1 = "";
     let result2 = "";
 
     if (choice1 === choice2) {
-        result1 = result2 = "Seri!";
+        result1 = `Seri! (${p1} vs ${p2})`;
+        result2 = `Seri! (${p2} vs ${p1})`;
     } else if (
         (choice1 === "rock" && choice2 === "scissors") ||
         (choice1 === "scissors" && choice2 === "paper") ||
@@ -43,14 +52,20 @@ export default function handler(req, res) {
         result2 = `Kamu menang! (${p2} vs ${p1})`;
     }
 
-    // Kirim hasil pertandingan ke kedua pemain
+    // Simpan hasil di room sebelum menghapusnya
+    rooms[roomId].results = {
+        [p1]: result1,
+        [p2]: result2
+    };
+
     res.json({
-        results: {
-            [p1]: result1,
-            [p2]: result2
-        }
+        player1: p1,
+        player2: p2,
+        results: rooms[roomId].results
     });
 
-    // Reset room setelah pertandingan selesai
-    delete rooms[roomId];
+    // Hapus data room setelah selesai
+    setTimeout(() => {
+        delete rooms[roomId];
+    }, 5000);
 }
