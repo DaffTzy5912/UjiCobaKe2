@@ -6,134 +6,262 @@
     <title>Suit Online</title>
     <style>
         /* General Styling */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-        }
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background: linear-gradient(135deg, #141e30, #243b55);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    text-align: center;
+    overflow-x: hidden;
+    position: relative;
+}
 
-        h2 {
-            font-size: 2rem;
-            color: #4a4a4a;
-            margin-bottom: 20px;
-        }
+/* Background Particles Effect */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    z-index: -1;
+    animation: moveParticles 10s linear infinite;
+}
 
-        /* Container Styling */
-        .container {
-            background: #fff;
-            padding: 20px 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
+@keyframes moveParticles {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(10px, 10px);
+    }
+}
 
-        /* Input and Button Styling */
-        input[type="text"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
+h2 {
+    font-size: 2.5rem;
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff;
+    margin-bottom: 20px;
+    animation: neonGlow 1.5s infinite alternate;
+}
 
-        input[type="text"]:focus {
-            border-color: #007bff;
-            outline: none;
-        }
+@keyframes neonGlow {
+    from {
+        text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff;
+    }
+    to {
+        text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 80px #00ffff;
+    }
+}
 
-        button {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+/* Container Styling */
+.container {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    animation: fadeInUp 0.8s ease-in-out;
+}
 
-        button:hover {
-            background-color: #0056b3;
-        }
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 
-        /* Error Message Styling */
-        .error {
-            color: #e74c3c;
-            font-size: 14px;
-            margin-top: 10px;
-        }
+/* Input and Button Styling */
+input[type="text"] {
+    width: calc(100% - 22px);
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    transition: all 0.3s ease;
+}
 
-        /* Game Buttons Styling */
-        .game-buttons {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
+input[type="text"]:focus {
+    border-color: #00ffff;
+    box-shadow: 0 0 10px #00ffff;
+    outline: none;
+}
 
-        .game-buttons button {
-            font-size: 24px;
-            padding: 15px;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background-color: #2ecc71;
-            color: #fff;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
+button {
+    background: linear-gradient(135deg, #ff00ff, #00ffff);
+    color: #fff;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
 
-        .game-buttons button:hover {
-            transform: scale(1.1);
-            background-color: #27ae60;
-        }
+button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: width 0.3s ease;
+    z-index: 1;
+}
 
-        /* Status and Result Styling */
-        #status {
-            font-size: 18px;
-            color: #555;
-            margin-bottom: 10px;
-        }
+button:hover::before {
+    width: 100%;
+}
 
-        #result {
-            font-size: 20px;
-            font-weight: bold;
-            color: #3498db;
-        }
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
 
-        /* Hidden Section Styling */
-        #room-section {
-            display: none;
-        }
+button:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 
-        /* Responsive Design */
-        @media (max-width: 600px) {
-            h2 {
-                font-size: 1.5rem;
-            }
+/* Error Message Styling */
+.error {
+    color: #ff4d4d;
+    font-size: 14px;
+    margin-top: 10px;
+    animation: shake 0.5s ease-in-out;
+}
 
-            input[type="text"], button {
-                font-size: 14px;
-            }
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-5px);
+    }
+    75% {
+        transform: translateX(5px);
+    }
+}
 
-            .game-buttons button {
-                font-size: 20px;
-                width: 60px;
-                height: 60px;
-            }
-        }
+/* Game Buttons Styling */
+.game-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin: 25px 0;
+}
+
+.game-buttons button {
+    font-size: 28px;
+    padding: 20px;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff00ff, #00ffff);
+    color: #fff;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.game-buttons button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: width 0.3s ease;
+    z-index: 1;
+}
+
+.game-buttons button:hover::before {
+    width: 100%;
+}
+
+.game-buttons button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.game-buttons button:active {
+    transform: scale(1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Status and Result Styling */
+#status {
+    font-size: 18px;
+    color: #00ffff;
+    margin-bottom: 10px;
+    text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+    transition: color 0.3s ease;
+}
+
+#result {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ff00ff;
+    text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+    }
+    to {
+        text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff, 0 0 80px #ff00ff;
+    }
+}
+
+/* Hidden Section Styling */
+#room-section {
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    h2 {
+        font-size: 1.8rem;
+    }
+
+    input[type="text"], button {
+        font-size: 14px;
+    }
+
+    .game-buttons button {
+        font-size: 24px;
+        width: 70px;
+        height: 70px;
+    }
+}
     </style>
 </head>
 <body>
