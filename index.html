@@ -63,32 +63,30 @@
     }
 
     async function play(choice) {
-        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerName=${encodeURIComponent(playerName)}&choice=${choice}`);
+    let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}&choice=${choice}`);
+    let data = await res.json();
+
+    if (data.status === "Menunggu pemain lain...") {
+        document.getElementById("status").innerText = "Menunggu lawan memilih...";
+        checkResult(); // Mulai polling hasil pertandingan
+    } else {
+        document.getElementById("result").innerText = data.result;
+        document.getElementById("status").innerText = "";
+    }
+}
+
+async function checkResult() {
+    let interval = setInterval(async () => {
+        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}`);
         let data = await res.json();
 
-        if (data.status === "Menunggu pemain lain...") {
-            document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
-            checkResult();
-        } else {
-            document.getElementById("result").innerText = data.result;
+        if (data.result) {
             document.getElementById("status").innerText = "";
+            document.getElementById("result").innerText = data.result;
+            clearInterval(interval);
         }
-    }
-
-    async function checkResult() {
-        let interval = setInterval(async () => {
-            let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerName=${encodeURIComponent(playerName)}`);
-            let data = await res.json();
-
-            if (data.result) {
-                document.getElementById("status").innerText = "";
-                document.getElementById("result").innerText = data.result;
-                clearInterval(interval);
-            } else if (data.status === "Menunggu giliranmu...") {
-                document.getElementById("status").innerText = "Sekarang giliranmu untuk memilih!";
-            }
-        }, 1000);
-    }
+    }, 1000); // Mengecek setiap 1 detik
+}
 </script>
 </body>
 </html>
