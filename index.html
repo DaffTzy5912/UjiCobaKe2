@@ -227,11 +227,16 @@ async function createRoom() {
     playerName = document.getElementById("player-name").value.trim();
     if (!playerName) return alert("Masukkan nama Anda!");
 
-    let res = await fetch(`${API_URL}/create-room`);
-    let data = await res.json();
-    roomId = data.roomId;
-    isCreator = true; // Set sebagai pembuat room
-    updateUI();
+    try {
+        let res = await fetch(`${API_URL}/create-room`);
+        let data = await res.json();
+        roomId = data.roomId;
+        isCreator = true; // Set sebagai pembuat room
+        updateUI();
+    } catch (error) {
+        console.error("Error creating room:", error);
+        alert("Terjadi kesalahan saat membuat room.");
+    }
 }
 
 async function joinRoom() {
@@ -254,53 +259,66 @@ function updateUI() {
 }
 
 async function play(choice) {
-    let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerName}&choice=${choice}`);
-    let data = await res.json();
+    try {
+        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerName}&choice=${choice}`);
+        let data = await res.json();
 
-    if (data.status === "Menunggu pemain lain...") {
-        document.getElementById("status").innerText = "Menunggu lawan memilih...";
-        checkResult(); // Mulai polling hasil pertandingan
-    } else {
-        document.getElementById("result").innerText = data.result;
-        document.getElementById("status").innerText = "";
+        if (data.status === "Menunggu pemain lain...") {
+            document.getElementById("status").innerText = "Menunggu lawan memilih...";
+            checkResult(); // Mulai polling hasil pertandingan
+        } else {
+            document.getElementById("result").innerText = data.result || "Hasil tidak tersedia.";
+            document.getElementById("status").innerText = "";
+        }
+    } catch (error) {
+        console.error("Error playing:", error);
+        alert("Terjadi kesalahan saat bermain.");
     }
 }
 
 async function checkRoomStatus() {
     let interval = setInterval(async () => {
-        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerName}`);
-        let data = await res.json();
+        try {
+            let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerName}`);
+            let data = await res.json();
 
-        // Jika pemain lain sudah bergabung
-        if (data.players && data.players.length === 2) {
-            clearInterval(interval); // Hentikan polling
+            // Jika pemain lain sudah bergabung
+            if (data.players && data.players.length === 2) {
+                clearInterval(interval); // Hentikan polling
 
-            // Notifikasi hanya untuk pembuat room
-            if (isCreator) {
-                const opponentName = data.players.find(p => p !== playerName);
-                document.getElementById("opponent-notification").innerText = `${opponentName} sudah memasuki room anda!`;
+                // Notifikasi hanya untuk pembuat room
+                if (isCreator) {
+                    const opponentName = data.players.find(p => p !== playerName) || "Pemain lain";
+                    document.getElementById("opponent-notification").innerText = `${opponentName} sudah memasuki room anda!`;
+                }
             }
+        } catch (error) {
+            console.error("Error checking room status:", error);
         }
     }, 1000); // Mengecek setiap 1 detik
 }
 
 async function checkResult() {
     let interval = setInterval(async () => {
-        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerName}`);
-        let data = await res.json();
+        try {
+            let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerName}`);
+            let data = await res.json();
 
-        if (data.result) {
-            document.getElementById("status").innerText = "";
-            document.getElementById("result").innerText = data.result;
-            clearInterval(interval);
-        } else {
-            // Jika pemain lain sudah memilih, tampilkan notifikasi giliran
-            const choices = data.choices || {};
-            if (Object.keys(choices).length === 1 && !choices[playerName]) {
-                document.getElementById("turn-notification").innerText = "Sekarang giliran anda!";
+            if (data.result) {
+                document.getElementById("status").innerText = "";
+                document.getElementById("result").innerText = data.result || "Hasil tidak tersedia.";
+                clearInterval(interval);
             } else {
-                document.getElementById("turn-notification").innerText = "";
+                // Jika pemain lain sudah memilih, tampilkan notifikasi giliran
+                const choices = data.choices || {};
+                if (Object.keys(choices).length === 1 && !choices[playerName]) {
+                    document.getElementById("turn-notification").innerText = "Sekarang giliran anda!";
+                } else {
+                    document.getElementById("turn-notification").innerText = "";
+                }
             }
+        } catch (error) {
+            console.error("Error checking result:", error);
         }
     }, 1000); // Mengecek setiap 1 detik
 }
