@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suit Online</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        button { padding: 10px; margin: 5px; font-size: 18px; }
+        #room-section, #game-section { display: none; }
+    </style>
+</head>
+<body>
+    <h2>Game Suit Online ✌️✊✋</h2>
+
+    <div id="create-room">
+        <button onclick="createRoom()">Buat Room</button>
+        <input type="text" id="room-code" placeholder="Masukkan kode room">
+        <button onclick="joinRoom()">Masuk Room</button>
+    </div>
+
+    <div id="room-section">
+        <h3 id="room-id"></h3>
+        <button onclick="play('rock')">✊</button>
+        <button onclick="play('paper')">✋</button>
+        <button onclick="play('scissors')">✌️</button>
+        <p id="result"></p>
+    </div>
+
+    <script>
+        let roomId = "";
+
+        async function createRoom() {
+            let res = await fetch('/api/create-room');
+            let data = await res.json();
+            roomId = data.roomId;
+            document.getElementById('room-id').innerText = "Room: " + roomId;
+            document.getElementById('create-room').style.display = "none";
+            document.getElementById('room-section').style.display = "block";
+        }
+
+        async function joinRoom() {
+            roomId = document.getElementById('room-code').value;
+            if (!roomId) return alert("Masukkan kode room!");
+            document.getElementById('room-id').innerText = "Room: " + roomId;
+            document.getElementById('create-room').style.display = "none";
+            document.getElementById('room-section').style.display = "block";
+        }
+
+        async function play(choice) {
+            let res = await fetch(`/api/play?roomId=${roomId}&choice=${choice}`);
+            let data = await res.json();
+            document.getElementById('result').innerText = data.result;
+        }
+    </script>
+</body>
+</html>
