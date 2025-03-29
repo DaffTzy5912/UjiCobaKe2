@@ -31,7 +31,7 @@ export default function handler(req, res) {
             status: "Menunggu pemain lain...",
             isCreator: playerId === rooms[roomId].creator,
             players: players,
-            choices: choices,
+            choices: choices || {},
         });
     }
 
@@ -41,7 +41,7 @@ export default function handler(req, res) {
             status: "Menunggu lawan memilih...",
             isCreator: playerId === rooms[roomId].creator,
             players: players,
-            choices: choices,
+            choices: choices || {},
         });
     }
 
@@ -70,10 +70,10 @@ export default function handler(req, res) {
 
     // Kirim hasil pertandingan ke kedua pemain
     res.json({
-        result: rooms[roomId].result,
+        result: rooms[roomId].result || "",
         isCreator: playerId === rooms[roomId].creator,
-        players: players,
-        choices: choices,
+        players: players || [],
+        choices: choices || {},
     });
 
     // Reset room setelah 5 detik untuk game baru
