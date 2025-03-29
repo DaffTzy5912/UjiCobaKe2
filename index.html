@@ -34,10 +34,13 @@
 
     <script>
         let roomId = "";
-let playerId = Math.random().toString(36).substring(7); // ID unik untuk pemain
-const API_URL = "https://uji-coba-ke2.vercel.app/api"; // Ganti ke Vercel
+let playerName = "";
+const API_URL = "https://uji-coba-ke2.vercel.app/api"; // Sesuaikan dengan server
 
 async function createRoom() {
+    playerName = document.getElementById("player-name").value.trim();
+    if (!playerName) return alert("Masukkan nama terlebih dahulu!");
+
     let res = await fetch(`${API_URL}/create-room`);
     let data = await res.json();
     roomId = data.roomId;
@@ -45,25 +48,28 @@ async function createRoom() {
 }
 
 async function joinRoom() {
+    playerName = document.getElementById("player-name").value.trim();
     roomId = document.getElementById("room-code").value;
-    if (!roomId) return alert("Masukkan kode room!");
+    if (!roomId || !playerName) return alert("Masukkan nama dan kode room!");
+
+    await fetch(`${API_URL}/join-room?roomId=${roomId}&playerName=${playerName}`);
     updateUI();
 }
 
 function updateUI() {
     document.getElementById("room-id").innerText = "Room: " + roomId;
-    document.getElementById("player-id").innerText = "Player ID: " + playerId;
+    document.getElementById("player-id").innerText = "Pemain: " + playerName;
     document.getElementById("create-room").style.display = "none";
     document.getElementById("room-section").style.display = "block";
 }
 
 async function play(choice) {
-    let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}&choice=${choice}`);
+    let res = await fetch(`${API_URL}/play?roomId=${roomId}&playerName=${playerName}&choice=${choice}`);
     let data = await res.json();
 
     if (data.status === "Menunggu pemain lain...") {
-        document.getElementById("status").innerText = "Menunggu lawan memilih...";
-        checkResult(); // Mulai polling hasil pertandingan
+        document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
+        checkResult();
     } else {
         document.getElementById("result").innerText = data.result;
         document.getElementById("status").innerText = "";
@@ -72,7 +78,7 @@ async function play(choice) {
 
 async function checkResult() {
     let interval = setInterval(async () => {
-        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}`);
+        let res = await fetch(`${API_URL}/check-result?roomId=${roomId}`);
         let data = await res.json();
 
         if (data.result) {
@@ -80,7 +86,7 @@ async function checkResult() {
             document.getElementById("result").innerText = data.result;
             clearInterval(interval);
         }
-    }, 1000); // Mengecek setiap 1 detik
+    }, 1000);
 }
     </script>
 </body>
