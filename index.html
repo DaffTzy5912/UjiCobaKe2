@@ -58,21 +58,21 @@ async function play(choice) {
     let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}&choice=${choice}`);
     let data = await res.json();
 
-    document.getElementById("result").innerText = data.result || data.status;
-    
     if (data.status === "Menunggu pemain lain...") {
         document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
-        checkResult(); // Tunggu hasil lawan
+        checkResult(); // Mulai mengecek hasil
     } else {
+        document.getElementById("result").innerText = data.result;
         document.getElementById("status").innerText = "";
     }
 }
 
+// Memastikan kedua pemain langsung mendapat hasil
 async function checkResult() {
     let interval = setInterval(async () => {
         let res = await fetch(`${API_URL}/check-result?roomId=${roomId}&playerId=${playerId}`);
         let data = await res.json();
-        
+
         if (data.result) {
             document.getElementById("status").innerText = "";
             document.getElementById("result").innerText = data.result;
@@ -80,7 +80,7 @@ async function checkResult() {
         } else if (data.status === "Menunggu giliranmu...") {
             document.getElementById("status").innerText = "Sekarang giliranmu untuk memilih!";
         }
-    }, 2000);
+    }, 1000); // Interval lebih cepat agar sinkronisasi lebih lancar
 }
     </script>
 </body>
