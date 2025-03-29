@@ -60,8 +60,11 @@ async function play(choice) {
 
     document.getElementById("result").innerText = data.result || data.status;
     
-    if (!data.result) {
-        checkResult(); // Cek hasil jika masih menunggu lawan
+    if (data.status === "Menunggu pemain lain...") {
+        document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
+        checkResult(); // Tunggu hasil lawan
+    } else {
+        document.getElementById("status").innerText = "";
     }
 }
 
@@ -74,6 +77,8 @@ async function checkResult() {
             document.getElementById("status").innerText = "";
             document.getElementById("result").innerText = data.result;
             clearInterval(interval);
+        } else if (data.status === "Menunggu giliranmu...") {
+            document.getElementById("status").innerText = "Sekarang giliranmu untuk memilih!";
         }
     }, 2000);
 }
