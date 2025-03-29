@@ -10,22 +10,22 @@ export default function handler(req, res) {
     }
 
     if (method === "GET" && query.action === "join-room") {
-        const { roomId, playerId } = query;
-        if (!roomId || !playerId) return res.status(400).json({ error: "Invalid request" });
+        const { roomId, playerName } = query;
+        if (!roomId || !playerName) return res.status(400).json({ error: "Invalid request" });
 
         if (!rooms[roomId]) return res.status(404).json({ error: "Room not found" });
 
-        rooms[roomId].players[playerId] = true;
-        return res.json({ message: "Joined room", roomId });
+        rooms[roomId].players[playerName] = true;
+        return res.json({ message: `Selamat datang, ${playerName}!`, roomId });
     }
 
     if (method === "GET" && query.action === "play") {
-        const { roomId, playerId, choice } = query;
-        if (!roomId || !playerId || !choice) return res.status(400).json({ error: "Invalid request" });
+        const { roomId, playerName, choice } = query;
+        if (!roomId || !playerName || !choice) return res.status(400).json({ error: "Invalid request" });
 
         if (!rooms[roomId]) return res.status(404).json({ error: "Room not found" });
 
-        rooms[roomId].choices[playerId] = choice;
+        rooms[roomId].choices[playerName] = choice;
 
         const players = Object.keys(rooms[roomId].choices);
         if (players.length < 2) {
@@ -57,11 +57,6 @@ export default function handler(req, res) {
         if (!roomId) return res.status(400).json({ error: "Invalid request" });
 
         if (!rooms[roomId]) return res.status(404).json({ error: "Room not found" });
-
-        const players = Object.keys(rooms[roomId].choices);
-        if (players.length < 2) {
-            return res.json({ status: "Menunggu pemain lain..." });
-        }
 
         return res.json({ result: rooms[roomId].result });
     }
