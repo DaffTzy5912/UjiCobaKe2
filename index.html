@@ -72,8 +72,7 @@
                     document.getElementById("status").innerText = "Sekarang giliran lawan memilih...";
                     startPolling(); // Mulai polling hasil
                 } else {
-                    document.getElementById("result").innerText = data.result;
-                    document.getElementById("status").innerText = "";
+                    displayResult(data.result);
                 }
             } catch (error) {
                 document.getElementById("error-message").innerText = error.message;
@@ -90,16 +89,25 @@
 
                     if (data.result) {
                         clearInterval(pollInterval); // Hentikan polling setelah hasil diterima
-                        document.getElementById("status").innerText = "";
-                        document.getElementById("result").innerText = data.result;
-                    } else if (data.status === "Menunggu giliranmu...") {
-                        document.getElementById("status").innerText = "Sekarang giliranmu untuk memilih!";
+                        displayResult(data.result);
                     }
                 } catch (error) {
                     document.getElementById("error-message").innerText = error.message;
                     clearInterval(pollInterval); // Hentikan polling jika terjadi kesalahan
                 }
             }, 2000); // Interval polling 2 detik
+        }
+
+        // Menampilkan hasil berdasarkan perspektif pemain
+        function displayResult(result) {
+            document.getElementById("status").innerText = "";
+            if (result === "win") {
+                document.getElementById("result").innerText = "Selamat! Kamu pemenang dari suit!";
+            } else if (result === "lose") {
+                document.getElementById("result").innerText = "Yah, kamu kalah...";
+            } else if (result === "draw") {
+                document.getElementById("result").innerText = "Hasil seri!";
+            }
         }
     </script>
 </body>
